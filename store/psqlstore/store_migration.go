@@ -7,9 +7,11 @@ type Migration struct {
 
 var migrations = []Migration{
 	Migration{
-		`CREATE TABLE IF NOT EXISTS users (
+		`CREATE TABLE IF NOT EXISTS account	 (
 			id serial,
-			name varchar(30) NOT NULL DEFAULT '',
+			username varchar(30) NOT NULL DEFAULT '',
+			email varchar(50) NOT NULL,
+			password varchar(64) NOT NULL,
 			win int NOT NULL DEFAULT 0,
 			loss int NOT NULL DEFAULT 0,
 			disputes int NOT NULL DEFAULT 0,
@@ -18,7 +20,19 @@ var migrations = []Migration{
 			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		);`,
-		"DROP TABLE IF EXISTS user;",
+		"DROP TABLE IF EXISTS account;",
+	},
+	Migration{
+		`CREATE TABLE IF NOT EXISTS token (
+			id serial,
+			account_id int NOT NULL,
+			token char(60) NOT NULL,
+			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			FOREIGN KEY (account_id) REFERENCES account(id)
+		);`,
+		"DROP TABLE IF EXISTS token;",
 	},
 }
 

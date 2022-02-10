@@ -33,13 +33,13 @@ func Open(jsonConfig string) (*PsqlStore, error) {
 	if err != nil {
 		log.Println(connectionString)
 		log.Println(err)
-		log.Println("0002: unable to use data source name; this will not be a connection error, but a DSN parse error or another initialisation error.")
+		log.Println("e0002: unable to use data source name; this will not be a connection error, but a DSN parse error or another initialisation error.")
 		return nil, err
 	}
 
 	err = TestDatabase(s)
 	if err != nil {
-		log.Println("0003: Shutting down")
+		log.Println("e0003: Shutting down")
 		os.Exit(1)
 	}
 
@@ -56,7 +56,7 @@ func TestDatabase(s PsqlStore) error {
 	err := s.db.Ping()
 	if err != nil {
 		log.Println(err)
-		log.Println("0004: Failed to connect to DB")
+		log.Println("e0004: Failed to connect to DB")
 	}
 	return nil
 }
@@ -65,6 +65,23 @@ func (s *PsqlStore) Exec(query string) {
 	if _, err := s.db.Exec(query); err != nil {
 		log.Println(err)
 		log.Println(query)
-		log.Println("0008: The above query failed to be executed")
+		log.Println("e0008: The above query failed to be executed")
 	}
+}
+
+func (s *PsqlStore) CheckExists(table string, column string, field interface{}) bool {
+	rows, err := s.db.Query(
+		"SELECT null FROM "+table+" WHERE "+column+"=$1",
+		field,
+	)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+
+	count := 0
+	for rows.Next() {
+		count++
+	}
+	return count > 0
 }

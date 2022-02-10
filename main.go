@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/config"
+	"github.com/David-Orson/Surf-Secrets-3-Api/handler"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/psqlstore"
 
@@ -21,12 +21,13 @@ func main() {
 
 	s, err = psqlstore.Open(config.LoadFile("./db.json"))
 	if err != nil {
-		log.Fatal("0001: Can't start the server without a store.")
+		log.Fatal("e0001: Can't start the server without a store.")
 		log.Println(err)
 		return
 	}
 
 	router := mux.NewRouter()
+	handler.InitRouter(router, s)
 
 	originsOk := ghandlers.AllowedOrigins([]string{
 		os.Getenv("ORIGIN_ALLOWED"),
@@ -47,10 +48,6 @@ func main() {
 		"HEAD",
 		"OPTIONS",
 	})
-
-	// Don't worry golang, I was going to use it later...
-	// GOLANG: NO FUCK YOU, VARIABLE NOT USED!
-	fmt.Print(s)
 
 	log.Println("Listening on :8085")
 	log.Println(
