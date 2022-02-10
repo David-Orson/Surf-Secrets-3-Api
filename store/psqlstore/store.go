@@ -29,7 +29,7 @@ func Open(jsonConfig string) (*PsqlStore, error) {
 
 	var s PsqlStore
 	var err error
-	s.db, err = sql.Open("postgres", "postgres://postgres:OrsonDC@localhost?sslmode=disable")
+	s.db, err = sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Println(connectionString)
 		log.Println(err)
