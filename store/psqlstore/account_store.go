@@ -65,6 +65,50 @@ func (s *PsqlAccountStore) Get(id int) (model.Account, error) {
 	return account, nil
 }
 
+func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
+	var accounts []model.Account
+	rows, err := s.db.Query(`
+		SELECT
+			id,
+			username,
+			
+			win,
+			loss,
+			disputes,
+			steam_id
+		FROM
+			account
+		;`,
+	)
+
+	if err != nil {
+		log.Println("e0025: Failed to get all users")
+		log.Println(err)
+		return []model.Account{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var account model.Account
+		err = rows.Scan(
+			&account.Id,
+			&account.Username,
+			&account.Win,
+			&account.Loss,
+			&account.Disputes,
+			&account.SteamId,
+		)
+		if err != nil {
+			log.Println("e0011: Failed to populate Account struct'")
+			log.Println(err)
+			return []model.Account{}, err
+		}
+		accounts = append(accounts, account)
+	}
+
+	return accounts, nil
+}
+
 func (s *PsqlAccountStore) Create(account *model.Account) error {
 	if !s.CheckExists("account", "email", account.Email) {
 		hashedPass, _ := bcrypt.GenerateFromPassword(

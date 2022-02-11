@@ -11,13 +11,13 @@ func accountRoutes() {
 	router.HandleFunc("/account/{id}", auth(getAccount, "*")).Methods("GET")
 
 	// POST
-	router.HandleFunc("/account", auth(createAccount, "canCreateAccount")).Methods("POST")
+	router.HandleFunc("/account", auth(createAccount, "*")).Methods("POST")
 
 	// PUT
-	router.HandleFunc("/account", auth(updateAccount, "canUpdateAccount")).Methods("PUT")
+	router.HandleFunc("/account", auth(updateAccount, "*")).Methods("PUT")
 
 	// DELETE
-	router.HandleFunc("/account/{id}", auth(deleteAccount, "canDeleteAccount")).Methods("DELETE")
+	router.HandleFunc("/account/{id}", auth(deleteAccount, "*")).Methods("DELETE")
 }
 
 func getAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
@@ -37,6 +37,19 @@ func getAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 	}
 
 	respond(w, account, http.StatusOK)
+}
+
+func getAllAccounts(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+	var accounts []model.Account
+
+	accounts, err := s.Account().GetAll()
+
+	if err != nil {
+		respondMsg(w, "Error: Could not get account", http.StatusBadRequest)
+		return
+	}
+
+	respond(w, accounts, http.StatusOK)
 }
 
 func createAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
