@@ -28,6 +28,7 @@ type AuthStore interface {
 }
 
 type FinderStore interface {
+	GetPost(id int) (model.FinderPost, error)
 	GetAllPosts() ([]model.FinderPost, error)
 	CreatePost(finderPost *model.FinderPost) error
 }
@@ -40,6 +41,8 @@ type MatchStore interface {
 	GetAll() ([]model.Match, error)
 	GetByAccount(id int) ([]model.Match, error)
 	GetDisputesByAccount(id int) ([]model.Match, error)
+	Create(match *model.Match) error
+	Update(match *model.Match) error
 }
 
 type TokenStore interface {

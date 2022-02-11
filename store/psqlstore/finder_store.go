@@ -2,6 +2,7 @@ package psqlstore
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
@@ -13,6 +14,49 @@ type PsqlFinderStore struct {
 
 func (s *PsqlStore) Finder() store.FinderStore {
 	return &PsqlFinderStore{s}
+}
+
+func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
+	var finderPost model.FinderPost
+	rows, err := s.db.Query(`
+		SELECT	
+			id,
+			team,
+			team_size,
+			time,
+			maps
+		FROM
+			finder
+		WHERE
+			id = $1
+		LIMIT 1
+		;`,
+		id,
+	)
+
+	if err != nil {
+		log.Println("e0040: Failed to find finder post with id '" + strconv.Itoa(id) + "'")
+		log.Println(err)
+		return model.FinderPost{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(
+			&finderPost.Id,
+			&finderPost.Team,
+			&finderPost.TeamSize,
+			&finderPost.Time,
+			&finderPost.Maps,
+		)
+		if err != nil {
+			log.Println("e0041: Failed to populate FinderPost struct'")
+			log.Println(err)
+			return model.FinderPost{}, err
+		}
+	}
+
+	return finderPost, nil
 }
 
 func (s *PsqlFinderStore) GetAllPosts() ([]model.FinderPost, error) {
