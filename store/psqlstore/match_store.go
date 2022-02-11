@@ -59,7 +59,7 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 			&match.Result,
 		)
 		if err != nil {
-			log.Println("e0011: Failed to populate Match struct'")
+			log.Println("e0033: Failed to populate Match struct'")
 			log.Println(err)
 			return model.Match{}, err
 		}
@@ -108,7 +108,7 @@ func (s *PsqlMatchStore) GetAll() ([]model.Match, error) {
 			&match.Result,
 		)
 		if err != nil {
-			log.Println("e0011: Failed to populate Match struct'")
+			log.Println("e0034: Failed to populate Match struct'")
 			log.Println(err)
 			return []model.Match{}, err
 		}
@@ -164,7 +164,7 @@ func (s *PsqlMatchStore) GetByAccount(AccountId int) ([]model.Match, error) {
 			&match.Result,
 		)
 		if err != nil {
-			log.Println("e0011: Failed to populate Match struct'")
+			log.Println("e0035: Failed to populate Match struct'")
 			log.Println(err)
 			return []model.Match{}, err
 		}
@@ -222,7 +222,7 @@ func (s *PsqlMatchStore) GetDisputesByAccount(accountId int) ([]model.Match, err
 			&match.Result,
 		)
 		if err != nil {
-			log.Println("e0011: Failed to populate Match struct'")
+			log.Println("e0036: Failed to populate Match struct'")
 			log.Println(err)
 			return []model.Match{}, err
 		}
