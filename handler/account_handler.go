@@ -8,6 +8,7 @@ import (
 
 func accountRoutes() {
 	// GET
+	router.HandleFunc("/account", auth(getAllAccounts, "*")).Methods("GET")
 	router.HandleFunc("/account/{id}", auth(getAccount, "*")).Methods("GET")
 
 	// POST
@@ -45,7 +46,7 @@ func getAllAccounts(w http.ResponseWriter, r *http.Request, authModel model.Auth
 	accounts, err := s.Account().GetAll()
 
 	if err != nil {
-		respondMsg(w, "Error: Could not get account", http.StatusBadRequest)
+		respondMsg(w, "Error: Could not get accounts", http.StatusBadRequest)
 		return
 	}
 

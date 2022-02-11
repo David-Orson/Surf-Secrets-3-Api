@@ -9,6 +9,7 @@ var store Store
 type Store interface {
 	Account() AccountStore
 	Auth() AuthStore
+	Match() MatchStore
 	Token() TokenStore
 }
 
@@ -22,6 +23,13 @@ type AccountStore interface {
 
 type AuthStore interface {
 	Login(account *model.Account) (model.Token, error)
+}
+
+type MatchStore interface {
+	Get(id int) (model.Match, error)
+	GetAll() ([]model.Match, error)
+	GetByAccount(id int) ([]model.Match, error)
+	GetDisputesByAccount(id int) ([]model.Match, error)
 }
 
 type TokenStore interface {
