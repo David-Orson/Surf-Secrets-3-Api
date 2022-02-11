@@ -17,7 +17,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := s.Auth().Login(&account)
 	if err != nil {
-		log.Println("login error, ***validation needed")
+		log.Println("e0024: login error, ***validation needed")
 		return
 	}
 

@@ -24,5 +24,6 @@ type AuthStore interface {
 }
 
 type TokenStore interface {
+	GetAll() ([]model.Token, error)
 	DeleteAllByAccountId(accountId int) error
 }

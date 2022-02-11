@@ -31,7 +31,6 @@ func Open(jsonConfig string) (*PsqlStore, error) {
 	var err error
 	s.db, err = sql.Open("postgres", connectionString)
 	if err != nil {
-		log.Println(connectionString)
 		log.Println(err)
 		log.Println("e0002: unable to use data source name; this will not be a connection error, but a DSN parse error or another initialisation error.")
 		return nil, err
