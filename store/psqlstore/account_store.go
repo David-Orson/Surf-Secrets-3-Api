@@ -99,7 +99,7 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 			&account.SteamId,
 		)
 		if err != nil {
-			log.Println("e0011: Failed to populate Account struct'")
+			log.Println("e0032: Failed to populate Account struct'")
 			log.Println(err)
 			return []model.Account{}, err
 		}
