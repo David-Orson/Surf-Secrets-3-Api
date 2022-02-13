@@ -8,7 +8,8 @@ import (
 )
 
 func authRoutes() {
-	router.HandleFunc("/auth", login).Methods("POST")
+	router.HandleFunc("/auth/login", login).Methods("POST")
+	router.HandleFunc("/auth/signup", signup).Methods("POST")
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -22,4 +23,17 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, token, http.StatusOK)
+}
+
+func signup(w http.ResponseWriter, r *http.Request) {
+	var account model.Account
+	readBytes(r, &account)
+
+	err := s.Account().Create(&account)
+	if err != nil {
+		respondMsg(w, "Error: Could not create account", http.StatusBadRequest)
+		return
+	}
+
+	respond(w, account, http.StatusCreated)
 }
