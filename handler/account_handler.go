@@ -8,7 +8,7 @@ import (
 
 func accountRoutes() {
 	// GET
-	router.HandleFunc("/account", getAllAccounts).Methods("GET")
+	router.HandleFunc("/accounts", getAllAccounts).Methods("GET")
 	router.HandleFunc("/account/{id}", getAccount).Methods("GET")
 
 	// POST
