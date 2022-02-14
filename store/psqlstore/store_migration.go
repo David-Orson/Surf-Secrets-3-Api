@@ -26,7 +26,7 @@ var migrations = []Migration{
 		`CREATE TABLE IF NOT EXISTS token (
 			id serial,
 			account_id int NOT NULL,
-			token char(60) NOT NULL,
+			token char(100) NOT NULL,
 			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
