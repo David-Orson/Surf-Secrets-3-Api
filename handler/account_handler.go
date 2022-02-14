@@ -8,8 +8,8 @@ import (
 
 func accountRoutes() {
 	// GET
-	router.HandleFunc("/account", auth(getAllAccounts, "*")).Methods("GET")
-	router.HandleFunc("/account/{id}", auth(getAccount, "*")).Methods("GET")
+	router.HandleFunc("/account", getAllAccounts).Methods("GET")
+	router.HandleFunc("/account/{id}", getAccount).Methods("GET")
 
 	// POST
 	router.HandleFunc("/account", auth(createAccount, "*")).Methods("POST")
@@ -21,7 +21,7 @@ func accountRoutes() {
 	router.HandleFunc("/account/{id}", auth(deleteAccount, "*")).Methods("DELETE")
 }
 
-func getAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getAccount(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r, "id")
 	if err != nil {
 		respondMsg(w, "Error: {id} is not an integer", http.StatusBadRequest)
@@ -40,7 +40,7 @@ func getAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 	respond(w, account, http.StatusOK)
 }
 
-func getAllAccounts(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getAllAccounts(w http.ResponseWriter, r *http.Request) {
 	var accounts []model.Account
 
 	accounts, err := s.Account().GetAll()
