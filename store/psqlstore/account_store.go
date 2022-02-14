@@ -18,7 +18,7 @@ func (s *PsqlStore) Account() store.AccountStore {
 	return &PsqlAccountStore{s}
 }
 
-func (s *PsqlAccountStore) Get(id int) (model.Account, error) {
+func (s *PsqlAccountStore) Get(username string) (model.Account, error) {
 	var account model.Account
 	rows, err := s.db.Query(`
 		SELECT
@@ -28,18 +28,19 @@ func (s *PsqlAccountStore) Get(id int) (model.Account, error) {
 			win,
 			loss,
 			disputes,
-			steam_id
+			steam_id,
+			create_date
 		FROM
 			account
 		WHERE
-			id = $1
+			username = $1
 		LIMIT 1
 		;`,
-		id,
+		username,
 	)
 
 	if err != nil {
-		log.Println("e0010: Failed to find 'account' with id '" + strconv.Itoa(id) + "'")
+		log.Println("e0010: Failed to find 'account' '" + username + "'")
 		log.Println(err)
 		return model.Account{}, err
 	}
@@ -54,6 +55,7 @@ func (s *PsqlAccountStore) Get(id int) (model.Account, error) {
 			&account.Loss,
 			&account.Disputes,
 			&account.SteamId,
+			&account.CreateDate,
 		)
 		if err != nil {
 			log.Println("e0011: Failed to populate Account struct'")
@@ -71,11 +73,11 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 		SELECT
 			id,
 			username,
-			
 			win,
 			loss,
 			disputes,
-			steam_id
+			steam_id,
+			create_date
 		FROM
 			account
 		;`,
@@ -97,6 +99,7 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 			&account.Loss,
 			&account.Disputes,
 			&account.SteamId,
+			&account.CreateDate,
 		)
 		if err != nil {
 			log.Println("e0032: Failed to populate Account struct'")

@@ -34,6 +34,29 @@ var migrations = []Migration{
 		);`,
 		"DROP TABLE IF EXISTS token;",
 	},
+	Migration{
+		`CREATE TABLE IF NOT EXISTS map (
+			id serial,
+			name varchar(30) NOT NULL,
+			tier int NOT NULL,
+			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id)
+		);`,
+		"DROP TABLE IF EXISTS map;",
+	},
+	Migration{
+		`CREATE TABLE IF NOT EXISTS finder_post (
+			id serial,
+			team int[] NOT NULL,
+			time TIMESTAMP NOT NULL,
+			maps jsonb NOT NULL,
+			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id)
+		);`,
+		"DROP TABLE IF EXISTS map;",
+	},
 }
 
 func (s *PsqlStore) Up() {

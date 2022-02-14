@@ -28,7 +28,7 @@ func (s *PsqlMapStore) GetAll() ([]model.Map, error) {
 	)
 
 	if err != nil {
-		log.Println("e0030: Failed to get all users")
+		log.Println("e0030: Failed to get all maps")
 		log.Println(err)
 		return []model.Map{}, err
 	}

@@ -8,14 +8,14 @@ import (
 
 func finderRoutes() {
 	// GET
-	router.HandleFunc("/finder", auth(getAllFinderPosts, "*")).Methods("GET")
+	router.HandleFunc("/finder-posts", getAllFinderPosts).Methods("GET")
 
 	// POST
-	router.HandleFunc("/finder", auth(createFinderPost, "*")).Methods("POST")
+	router.HandleFunc("/finder-post", createFinderPost).Methods("POST")
 
 }
 
-func getAllFinderPosts(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getAllFinderPosts(w http.ResponseWriter, r *http.Request) {
 	var finderPosts []model.FinderPost
 
 	finderPosts, err := s.Finder().GetAllPosts()
@@ -28,7 +28,7 @@ func getAllFinderPosts(w http.ResponseWriter, r *http.Request, authModel model.A
 	respond(w, finderPosts, http.StatusOK)
 }
 
-func createFinderPost(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func createFinderPost(w http.ResponseWriter, r *http.Request) {
 	var finderPost model.FinderPost
 	var err error
 

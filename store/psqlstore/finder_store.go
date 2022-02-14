@@ -1,11 +1,13 @@
 package psqlstore
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
+	"github.com/lib/pq"
 )
 
 type PsqlFinderStore struct {
@@ -18,15 +20,16 @@ func (s *PsqlStore) Finder() store.FinderStore {
 
 func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 	var finderPost model.FinderPost
+	var maps []uint8
+
 	rows, err := s.db.Query(`
 		SELECT	
 			id,
 			team,
-			team_size,
 			time,
 			maps
 		FROM
-			finder
+			finder_post
 		WHERE
 			id = $1
 		LIMIT 1
@@ -44,13 +47,18 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 	for rows.Next() {
 		err = rows.Scan(
 			&finderPost.Id,
-			&finderPost.Team,
-			&finderPost.TeamSize,
+			pq.Array(&finderPost.Team),
 			&finderPost.Time,
-			&finderPost.Maps,
+			&maps,
 		)
 		if err != nil {
 			log.Println("e0041: Failed to populate FinderPost struct'")
+			log.Println(err)
+			return model.FinderPost{}, err
+		}
+		err = json.Unmarshal([]byte(maps), &finderPost.Maps)
+		if err != nil {
+			log.Println("Error: Failed to read MeasureRecord features")
 			log.Println(err)
 			return model.FinderPost{}, err
 		}
@@ -60,16 +68,17 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 }
 
 func (s *PsqlFinderStore) GetAllPosts() ([]model.FinderPost, error) {
-	var finders []model.FinderPost
+	var finderPosts []model.FinderPost
+	var maps []uint8
+
 	rows, err := s.db.Query(`
 		SELECT
 			id,
 			team,
-			team_size,
 			time,
 			maps
 		FROM
-			finder
+			finder_post
 		;`,
 	)
 
@@ -81,45 +90,60 @@ func (s *PsqlFinderStore) GetAllPosts() ([]model.FinderPost, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var finder model.FinderPost
+		var finderPost model.FinderPost
+		var teamIds pq.Int64Array
 		err = rows.Scan(
-			&finder.Id,
-			&finder.Team,
-			&finder.TeamSize,
-			&finder.Time,
-			&finder.Maps,
+			&finderPost.Id,
+			&teamIds,
+			&finderPost.Time,
+			&maps,
 		)
 		if err != nil {
-			log.Println("e0038: Failed to populate Finder struct'")
+			log.Println("e0038: Failed to populate FinderPost struct'")
 			log.Println(err)
 			return []model.FinderPost{}, err
 		}
-		finders = append(finders, finder)
+		err = json.Unmarshal([]byte(maps), &finderPost.Maps)
+		if err != nil {
+			log.Println("Error: Failed to read MeasureRecord features")
+			log.Println(err)
+			return []model.FinderPost{}, err
+		}
+
+		finderPost.Team = []int{}
+		for _, id := range teamIds {
+			finderPost.Team = append(
+				finderPost.Team,
+				int(id),
+			)
+		}
+
+		finderPosts = append(finderPosts, finderPost)
 	}
 
-	return finders, nil
+	return finderPosts, nil
 }
 
-func (s *PsqlFinderStore) CreatePost(finder *model.FinderPost) error {
+func (s *PsqlFinderStore) CreatePost(finderPost *model.FinderPost) error {
 	var id int
-	err := s.db.QueryRow(`
-			INSERT INTO finder (
+
+	maps, err := json.Marshal(finderPost.Maps)
+
+	err = s.db.QueryRow(`
+			INSERT INTO finder_post (
 				team,
-				team_size,
 				time,
 				maps
 			) VALUES (
 				$1,
 				$2,
-				$3,
-				$4
+				$3
 			)
 			RETURNING id
 			;`,
-		finder.Team,
-		finder.TeamSize,
-		finder.Time,
-		finder.Maps,
+		pq.Array(finderPost.Team),
+		finderPost.Time,
+		maps,
 	).Scan(&id)
 	if err != nil {
 		log.Println("e0039: Failed to create 'finder' row")
@@ -127,7 +151,7 @@ func (s *PsqlFinderStore) CreatePost(finder *model.FinderPost) error {
 		return err
 	}
 
-	finder.Id = id
+	finderPost.Id = id
 
 	return nil
 }

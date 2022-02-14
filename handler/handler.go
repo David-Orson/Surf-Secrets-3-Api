@@ -25,6 +25,8 @@ func InitRouter(r *mux.Router, mainStore store.Store) {
 
 	authRoutes()
 	accountRoutes()
+	finderRoutes()
+	mapRoutes()
 }
 
 func getId(r *http.Request, idName string) (int, error) {
@@ -37,6 +39,10 @@ func getId(r *http.Request, idName string) (int, error) {
 	}
 
 	return id, nil
+}
+
+func getParam(r *http.Request, paramName string) string {
+	return mux.Vars(r)[paramName]
 }
 
 func readBytes(r *http.Request, model interface{}) string {

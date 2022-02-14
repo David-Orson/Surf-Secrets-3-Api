@@ -8,10 +8,10 @@ import (
 
 func mapRoutes() {
 	// GET
-	router.HandleFunc("/map", auth(getAllMaps, "*")).Methods("GET")
+	router.HandleFunc("/maps", getAllMaps).Methods("GET")
 }
 
-func getAllMaps(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getAllMaps(w http.ResponseWriter, r *http.Request) {
 	var maps []model.Map
 
 	maps, err := s.Map().GetAll()

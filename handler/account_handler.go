@@ -9,7 +9,7 @@ import (
 func accountRoutes() {
 	// GET
 	router.HandleFunc("/accounts", getAllAccounts).Methods("GET")
-	router.HandleFunc("/account/{id}", getAccount).Methods("GET")
+	router.HandleFunc("/account/{username}", getAccount).Methods("GET")
 
 	// POST
 	router.HandleFunc("/account", auth(createAccount, "*")).Methods("POST")
@@ -22,16 +22,11 @@ func accountRoutes() {
 }
 
 func getAccount(w http.ResponseWriter, r *http.Request) {
-	id, err := getId(r, "id")
-	if err != nil {
-		respondMsg(w, "Error: {id} is not an integer", http.StatusBadRequest)
-		return
-	}
+	username := getParam(r, "username")
 
 	var account model.Account
 
-	account, err = s.Account().Get(id)
-
+	account, err := s.Account().Get(username)
 	if err != nil {
 		respondMsg(w, "Error: Could not get account", http.StatusBadRequest)
 		return

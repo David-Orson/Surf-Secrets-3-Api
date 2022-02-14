@@ -16,7 +16,7 @@ type Store interface {
 }
 
 type AccountStore interface {
-	Get(id int) (model.Account, error)
+	Get(username string) (model.Account, error)
 	GetAll() ([]model.Account, error)
 	Create(account *model.Account) error
 	Update(account *model.Account) error

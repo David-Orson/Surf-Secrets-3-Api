@@ -8,7 +8,7 @@ type Match struct {
 	Team1      []int     `json:"teamB"`
 	TeamSize   int       `json:"teamSize"`
 	Time       time.Time `json:"time"`
-	Maps       []int     `json:"maps"`
+	Maps       []Map     `json:"maps"`
 	Result0    []int     `json:"resultA"`
 	Result1    []int     `json:"resultB"`
 	IsDisputed bool      `json:"isDisputed"`

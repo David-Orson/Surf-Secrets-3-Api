@@ -7,5 +7,5 @@ type FinderPost struct {
 	Team     []int     `json:"team"`
 	TeamSize int       `json:"teamSize"`
 	Time     time.Time `json:"time"`
-	Maps     []int     `json:"maps"`
+	Maps     []Map     `json:"maps"`
 }
