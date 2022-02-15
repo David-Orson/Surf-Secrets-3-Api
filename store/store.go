@@ -31,6 +31,7 @@ type FinderStore interface {
 	GetPost(id int) (model.FinderPost, error)
 	GetAllPosts() ([]model.FinderPost, error)
 	CreatePost(finderPost *model.FinderPost) error
+	SetAccepted(id int) error
 }
 
 type MapStore interface {

@@ -1,11 +1,13 @@
 package psqlstore
 
 import (
+	"encoding/json"
 	"log"
 	"strconv"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
+	"github.com/lib/pq"
 )
 
 type PsqlMatchStore struct {
@@ -238,7 +240,9 @@ func (s *PsqlMatchStore) GetDisputesByAccount(accountId int) ([]model.Match, err
 
 func (s *PsqlMatchStore) Create(match *model.Match) error {
 	var id int
-	err := s.db.QueryRow(`
+	maps, err := json.Marshal(match.Maps)
+
+	err = s.db.QueryRow(`
 			INSERT INTO match (
 				team_0,
 				team_1,
@@ -256,19 +260,19 @@ func (s *PsqlMatchStore) Create(match *model.Match) error {
 				$4,
 				$5,
 				$6,
-				$7
+				$7,
 				$8,
 				$9
 			)
 			RETURNING id
 			;`,
-		match.Team0,
-		match.Team1,
+		pq.Array(match.Team0),
+		pq.Array(match.Team1),
 		match.TeamSize,
 		match.Time,
-		match.Maps,
-		match.Result0,
-		match.Result1,
+		maps,
+		pq.Array(match.Result0),
+		pq.Array(match.Result1),
 		match.IsDisputed,
 		match.Result,
 	).Scan(&id)

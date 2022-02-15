@@ -51,11 +51,30 @@ var migrations = []Migration{
 			team int[] NOT NULL,
 			time TIMESTAMP NOT NULL,
 			maps jsonb NOT NULL,
+			is_accepted boolean NOT NULL,
 			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
 		);`,
-		"DROP TABLE IF EXISTS map;",
+		"DROP TABLE IF EXISTS post;",
+	},
+	Migration{
+		`CREATE TABLE IF NOT EXISTS match (
+			id serial,
+			team_0 int[] NOT NULL,
+			team_1 int[] NOT NULL,
+			team_size int NOT NULL,
+			time TIMESTAMP NOT NULL,
+			maps jsonb NOT NULL,
+			result_0 int[] NOT NULL,
+			result_1 int[] NOT NULL,
+			is_disputed boolean NOT NULL,
+			result int NOT NULL,
+			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id)
+		);`,
+		"DROP TABLE IF EXISTS match;",
 	},
 }
 

@@ -32,6 +32,8 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 			finder_post
 		WHERE
 			id = $1
+		AND
+			is_accepted = false
 		LIMIT 1
 		;`,
 		id,
@@ -45,9 +47,10 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var teamIds pq.Int64Array
 		err = rows.Scan(
 			&finderPost.Id,
-			pq.Array(&finderPost.Team),
+			&teamIds,
 			&finderPost.Time,
 			&maps,
 		)
@@ -61,6 +64,13 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 			log.Println("Error: Failed to read MeasureRecord features")
 			log.Println(err)
 			return model.FinderPost{}, err
+		}
+		finderPost.Team = []int{}
+		for _, id := range teamIds {
+			finderPost.Team = append(
+				finderPost.Team,
+				int(id),
+			)
 		}
 	}
 
@@ -79,6 +89,8 @@ func (s *PsqlFinderStore) GetAllPosts() ([]model.FinderPost, error) {
 			maps
 		FROM
 			finder_post
+		WHERE
+			is_accepted = false	
 		;`,
 	)
 
@@ -133,11 +145,13 @@ func (s *PsqlFinderStore) CreatePost(finderPost *model.FinderPost) error {
 			INSERT INTO finder_post (
 				team,
 				time,
-				maps
+				maps,
+				is_accepted
 			) VALUES (
 				$1,
 				$2,
-				$3
+				$3,
+				false
 			)
 			RETURNING id
 			;`,
@@ -152,6 +166,26 @@ func (s *PsqlFinderStore) CreatePost(finderPost *model.FinderPost) error {
 	}
 
 	finderPost.Id = id
+
+	return nil
+}
+
+func (s *PsqlFinderStore) SetAccepted(id int) error {
+	_, err := s.db.Exec(`
+			UPDATE
+				finder_post
+			SET
+				is_accepted = true
+			WHERE
+				id = $1
+			;`,
+		id,
+	)
+	if err != nil {
+		log.Println("e0044: Failed to set finder post as accepted")
+		log.Println(err)
+		return err
+	}
 
 	return nil
 }

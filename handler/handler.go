@@ -27,6 +27,7 @@ func InitRouter(r *mux.Router, mainStore store.Store) {
 	accountRoutes()
 	finderRoutes()
 	mapRoutes()
+	matchRoutes()
 }
 
 func getId(r *http.Request, idName string) (int, error) {
@@ -71,8 +72,9 @@ func respondMsg(w http.ResponseWriter, message string, statusCode int) {
 func auth(next AuthHandler, columns ...string) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		authModel := authenticate(res, req, columns...)
-
-		next(res, req, authModel)
+		if authModel.AccountId != 0 {
+			next(res, req, authModel)
+		}
 	}
 }
 
@@ -81,7 +83,7 @@ func authenticate(res http.ResponseWriter, req *http.Request, columns ...string)
 	tokens, err := s.Token().GetAll()
 	if err != nil {
 		failAuth(res)
-		return model.Auth{}
+		return model.Auth{AccountId: 0}
 	}
 	foundToken := false
 	accountId := 0
@@ -94,7 +96,7 @@ func authenticate(res http.ResponseWriter, req *http.Request, columns ...string)
 
 	if !foundToken {
 		failAuth(res)
-		return model.Auth{}
+		return model.Auth{AccountId: 0}
 	}
 
 	return model.Auth{AccountId: accountId}

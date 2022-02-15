@@ -8,7 +8,7 @@ import (
 
 func matchRoutes() {
 	// GET
-	router.HandleFunc("/match", auth(getAllMatches, "*")).Methods("GET")
+	router.HandleFunc("/matches", auth(getAllMatches, "*")).Methods("GET")
 	router.HandleFunc("/match/user", auth(getMatchesByAccount, "*")).Methods("GET")
 	router.HandleFunc("/match/disputed", auth(getDisputesByAccount, "*")).Methods("GET")
 	router.HandleFunc("/match/{id}", auth(getMatch, "*")).Methods("GET")
@@ -87,28 +87,39 @@ func acceptMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 
 	var finderPost model.FinderPost
 	var match model.Match
-	var resultArray []int
-
-	readBytes(r, &match)
+	var resultArray [2]int
+	var team1 [1]int
 
 	finderPost, err = s.Finder().GetPost(id)
+	if err != nil {
+		respondMsg(w, "Error: Could not get match finder post", http.StatusBadRequest)
+		return
+	}
 
 	resultArray[0] = 0
 	resultArray[1] = 0
 
+	team1[0] = authModel.AccountId
+
 	match.Team0 = finderPost.Team
-	match.TeamSize = finderPost.TeamSize
+	match.Team1 = team1[:]
+	match.TeamSize = len(finderPost.Team)
 	match.Time = finderPost.Time
 	match.Maps = finderPost.Maps
-	match.Result0 = resultArray
-	match.Result1 = resultArray
+	match.Result0 = resultArray[:]
+	match.Result1 = resultArray[:]
 	match.IsDisputed = false
 	match.Result = 4
 
 	err = s.Match().Create(&match)
-
 	if err != nil {
 		respondMsg(w, "Error: Could not accept match", http.StatusBadRequest)
+		return
+	}
+
+	err = s.Finder().SetAccepted(id)
+	if err != nil {
+		respondMsg(w, "Error: Match finder post was not removed from the finder", http.StatusBadRequest)
 		return
 	}
 
