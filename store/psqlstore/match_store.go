@@ -20,6 +20,8 @@ func (s *PsqlStore) Match() store.MatchStore {
 
 func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 	var match model.Match
+	var maps []uint8
+
 	rows, err := s.db.Query(`
 		SELECT
 			id,
@@ -49,15 +51,19 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var team0Ids pq.Int64Array
+		var team1Ids pq.Int64Array
+		var result0 pq.Int64Array
+		var result1 pq.Int64Array
 		err = rows.Scan(
 			&match.Id,
-			&match.Team0,
-			&match.Team1,
+			&team0Ids,
+			&team1Ids,
 			&match.TeamSize,
 			&match.Time,
-			&match.Maps,
-			&match.Result0,
-			&match.Result1,
+			&maps,
+			&result0,
+			&result1,
 			&match.IsDisputed,
 			&match.Result,
 		)
@@ -65,6 +71,41 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 			log.Println("e0033: Failed to populate Match struct'")
 			log.Println(err)
 			return model.Match{}, err
+		}
+
+		err = json.Unmarshal([]byte(maps), &match.Maps)
+		if err != nil {
+			log.Println("Error: Failed to read MeasureRecord features")
+			log.Println(err)
+			return model.Match{}, err
+		}
+		match.Team0 = []int{}
+		for _, id := range team0Ids {
+			match.Team0 = append(
+				match.Team0,
+				int(id),
+			)
+		}
+		match.Team1 = []int{}
+		for _, id := range team1Ids {
+			match.Team1 = append(
+				match.Team1,
+				int(id),
+			)
+		}
+		match.Result0 = []int{}
+		for _, score := range result0 {
+			match.Result0 = append(
+				match.Result0,
+				int(score),
+			)
+		}
+		match.Result1 = []int{}
+		for _, score := range result1 {
+			match.Result1 = append(
+				match.Result1,
+				int(score),
+			)
 		}
 	}
 
@@ -288,7 +329,9 @@ func (s *PsqlMatchStore) Create(match *model.Match) error {
 }
 
 func (s *PsqlMatchStore) Update(match *model.Match) error {
-	_, err := s.db.Exec(`
+	maps, err := json.Marshal(match.Maps)
+
+	_, err = s.db.Exec(`
 			UPDATE
 				match
 			SET
@@ -304,19 +347,19 @@ func (s *PsqlMatchStore) Update(match *model.Match) error {
 			WHERE
 				id = $10
 			;`,
-		match.Team0,
-		match.Team1,
+		pq.Array(match.Team0),
+		pq.Array(match.Team1),
 		match.TeamSize,
 		match.Time,
-		match.Maps,
-		match.Result0,
-		match.Result1,
+		maps,
+		pq.Array(match.Result0),
+		pq.Array(match.Result1),
 		match.IsDisputed,
 		match.Result,
 		match.Id,
 	)
 	if err != nil {
-		log.Println("e0043: Failed to update 'account' row")
+		log.Println("e0043: Failed to update 'match' row")
 		log.Println(err)
 		return err
 	}

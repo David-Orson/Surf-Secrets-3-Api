@@ -1,6 +1,6 @@
 package model
 
 type Report struct {
-	AccountId int
-	Score     []int
+	AccountId int   `json:"account"`
+	Score     []int `json:"score"`
 }

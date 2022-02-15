@@ -8,10 +8,10 @@ import (
 
 func matchRoutes() {
 	// GET
-	router.HandleFunc("/matches", auth(getAllMatches, "*")).Methods("GET")
-	router.HandleFunc("/match/user", auth(getMatchesByAccount, "*")).Methods("GET")
+	router.HandleFunc("/matches", getAllMatches).Methods("GET")
+	router.HandleFunc("/match/user/{id}", getMatchesByAccount).Methods("GET")
 	router.HandleFunc("/match/disputed", auth(getDisputesByAccount, "*")).Methods("GET")
-	router.HandleFunc("/match/{id}", auth(getMatch, "*")).Methods("GET")
+	router.HandleFunc("/match/{id}", getMatch).Methods("GET")
 
 	// POST
 	router.HandleFunc("/match/{id}", auth(acceptMatch, "*")).Methods("POST")
@@ -20,7 +20,7 @@ func matchRoutes() {
 	router.HandleFunc("/match/{id}", auth(reportMatch, "*")).Methods("PUT")
 }
 
-func getMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getMatch(w http.ResponseWriter, r *http.Request) {
 	id, err := getId(r, "id")
 	if err != nil {
 		respondMsg(w, "Error: {id} is not an integer", http.StatusBadRequest)
@@ -39,7 +39,7 @@ func getMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 	respond(w, match, http.StatusOK)
 }
 
-func getAllMatches(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getAllMatches(w http.ResponseWriter, r *http.Request) {
 	var matches []model.Match
 
 	matches, err := s.Match().GetAll()
@@ -52,11 +52,16 @@ func getAllMatches(w http.ResponseWriter, r *http.Request, authModel model.Auth)
 	respond(w, matches, http.StatusOK)
 }
 
-func getMatchesByAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
+func getMatchesByAccount(w http.ResponseWriter, r *http.Request) {
 	var matches []model.Match
 
-	matches, err := s.Match().GetByAccount(authModel.AccountId)
+	id, err := getId(r, "id")
+	if err != nil {
+		respondMsg(w, "Error: {id} is not an integer", http.StatusBadRequest)
+		return
+	}
 
+	matches, err = s.Match().GetByAccount(id)
 	if err != nil {
 		respondMsg(w, "Error: Could not get matches by account", http.StatusBadRequest)
 		return
@@ -135,16 +140,22 @@ func reportMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 
 	var report model.Report
 	var match model.Match
-	var isInTeam0 bool
+	isInTeam0 := false
+
 	readBytes(r, &report)
+	report.AccountId = authModel.AccountId
 
 	match, err = s.Match().Get(id)
+	if err != nil {
+		respondMsg(w, "Error: Could not get match", http.StatusBadRequest)
+		return
+	}
 
 	for _, account := range match.Team0 {
 		if report.AccountId == account {
 			match.Result0 = report.Score
+			isInTeam0 = true
 		}
-		isInTeam0 = true
 	}
 
 	if !isInTeam0 {
@@ -170,7 +181,6 @@ func reportMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 	}
 
 	err = s.Match().Update(&match)
-
 	if err != nil {
 		respondMsg(w, "Error: Could not report match", http.StatusBadRequest)
 		return
