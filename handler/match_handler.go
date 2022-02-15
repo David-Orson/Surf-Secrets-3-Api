@@ -9,7 +9,7 @@ import (
 func matchRoutes() {
 	// GET
 	router.HandleFunc("/matches", getAllMatches).Methods("GET")
-	router.HandleFunc("/match/user/{id}", getMatchesByAccount).Methods("GET")
+	router.HandleFunc("/matches/user/{id}", getMatchesByAccount).Methods("GET")
 	router.HandleFunc("/match/disputed", auth(getDisputesByAccount, "*")).Methods("GET")
 	router.HandleFunc("/match/{id}", getMatch).Methods("GET")
 

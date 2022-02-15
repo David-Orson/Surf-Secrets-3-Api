@@ -165,7 +165,8 @@ func (s *PsqlMatchStore) GetAll() ([]model.Match, error) {
 
 func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 	var matchs []model.Match
-	// query not tested, account is in either team so filter if true of teams
+	var maps []uint8
+
 	rows, err := s.db.Query(`
 		SELECT
 			id,
@@ -181,9 +182,9 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 		FROM
 			match
 		WHERE
-			$1 = ANY team_0
+			$1 = ANY(team_0)
 		OR
-			$1 = ANY team_1
+			$1 = ANY(team_1)
 		;`,
 		accountId,
 	)
@@ -197,15 +198,19 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 
 	for rows.Next() {
 		var match model.Match
+		var team0Ids pq.Int64Array
+		var team1Ids pq.Int64Array
+		var result0 pq.Int64Array
+		var result1 pq.Int64Array
 		err = rows.Scan(
 			&match.Id,
-			&match.Team0,
-			&match.Team1,
+			&team0Ids,
+			&team1Ids,
 			&match.TeamSize,
 			&match.Time,
-			&match.Maps,
-			&match.Result0,
-			&match.Result1,
+			&maps,
+			&result0,
+			&result1,
 			&match.IsDisputed,
 			&match.Result,
 		)
@@ -214,6 +219,43 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 			log.Println(err)
 			return []model.Match{}, err
 		}
+
+		err = json.Unmarshal([]byte(maps), &match.Maps)
+		if err != nil {
+			log.Println("Error: Failed to read MeasureRecord features")
+			log.Println(err)
+			return []model.Match{}, err
+		}
+
+		match.Team0 = []int{}
+		for _, id := range team0Ids {
+			match.Team0 = append(
+				match.Team0,
+				int(id),
+			)
+		}
+		match.Team1 = []int{}
+		for _, id := range team1Ids {
+			match.Team1 = append(
+				match.Team1,
+				int(id),
+			)
+		}
+		match.Result0 = []int{}
+		for _, score := range result0 {
+			match.Result0 = append(
+				match.Result0,
+				int(score),
+			)
+		}
+		match.Result1 = []int{}
+		for _, score := range result1 {
+			match.Result1 = append(
+				match.Result1,
+				int(score),
+			)
+		}
+
 		matchs = append(matchs, match)
 	}
 
