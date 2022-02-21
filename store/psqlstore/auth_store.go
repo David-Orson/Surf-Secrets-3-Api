@@ -23,6 +23,7 @@ func (s *PsqlAuthStore) Login(account *model.Account) (model.Token, error) {
 	err := s.db.QueryRow(`
 		SELECT
 			id,
+			username,
 			password
 		FROM
 			account
@@ -32,6 +33,7 @@ func (s *PsqlAuthStore) Login(account *model.Account) (model.Token, error) {
 		strings.ToLower(account.Email),
 	).Scan(
 		&account.Id,
+		&account.Username,
 		&hashedPass,
 	)
 	if err != nil {
@@ -61,13 +63,16 @@ func (s *PsqlAuthStore) Login(account *model.Account) (model.Token, error) {
 	_, err = s.db.Exec(`
 		INSERT INTO token (
 			token,
+			username,
 			account_id
 		) VALUES (
 			$1,
-			$2
+			$2,
+			$3
 		)
 		;`,
 		token,
+		account.Username,
 		account.Id,
 	)
 	if err != nil {
@@ -77,6 +82,7 @@ func (s *PsqlAuthStore) Login(account *model.Account) (model.Token, error) {
 	}
 
 	tokenModel.AccountId = account.Id
+	tokenModel.Username = account.Username
 	tokenModel.Token = token
 
 	return tokenModel, nil

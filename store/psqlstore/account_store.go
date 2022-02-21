@@ -7,6 +7,7 @@ import (
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,6 +30,7 @@ func (s *PsqlAccountStore) Get(username string) (model.Account, error) {
 			loss,
 			disputes,
 			steam_id,
+			finder_post_ids,
 			create_date
 		FROM
 			account
@@ -47,6 +49,7 @@ func (s *PsqlAccountStore) Get(username string) (model.Account, error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var finderPostIds pq.Int64Array
 		err = rows.Scan(
 			&account.Id,
 			&account.Username,
@@ -55,6 +58,7 @@ func (s *PsqlAccountStore) Get(username string) (model.Account, error) {
 			&account.Loss,
 			&account.Disputes,
 			&account.SteamId,
+			&finderPostIds,
 			&account.CreateDate,
 		)
 		if err != nil {
@@ -62,6 +66,15 @@ func (s *PsqlAccountStore) Get(username string) (model.Account, error) {
 			log.Println(err)
 			return model.Account{}, err
 		}
+
+		account.FinderPostIds = []int{}
+		for _, id := range finderPostIds {
+			account.FinderPostIds = append(
+				account.FinderPostIds,
+				int(id),
+			)
+		}
+
 	}
 
 	return account, nil
@@ -77,6 +90,7 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 			loss,
 			disputes,
 			steam_id,
+			finder_post_ids,
 			create_date
 		FROM
 			account
@@ -92,6 +106,7 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 
 	for rows.Next() {
 		var account model.Account
+		var finderPostIds pq.Int64Array
 		err = rows.Scan(
 			&account.Id,
 			&account.Username,
@@ -99,6 +114,7 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 			&account.Loss,
 			&account.Disputes,
 			&account.SteamId,
+			&finderPostIds,
 			&account.CreateDate,
 		)
 		if err != nil {
@@ -106,6 +122,15 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 			log.Println(err)
 			return []model.Account{}, err
 		}
+
+		account.FinderPostIds = []int{}
+		for _, id := range finderPostIds {
+			account.FinderPostIds = append(
+				account.FinderPostIds,
+				int(id),
+			)
+		}
+
 		accounts = append(accounts, account)
 	}
 
@@ -178,9 +203,11 @@ func (s *PsqlAccountStore) Update(account *model.Account) error {
 				win = $4,
 				loss = $5,
 				disputes = $6,
-				steam_id = $7
+				steam_id = $7,
+				finder_post_ids = $8
+				
 			WHERE
-				id = $8
+				id = $9
 			;`,
 			account.Username,
 			hashedPass,
@@ -189,6 +216,7 @@ func (s *PsqlAccountStore) Update(account *model.Account) error {
 			account.Loss,
 			account.Disputes,
 			account.SteamId,
+			pq.Array(account.FinderPostIds),
 			account.Id,
 		)
 		if err != nil {
@@ -206,9 +234,10 @@ func (s *PsqlAccountStore) Update(account *model.Account) error {
 				win = $3,
 				loss = $4,
 				disputes = $5,
-				steam_id = $6
+				steam_id = $6,
+				finder_post_ids = $7
 			WHERE
-				id = $7
+				id = $8
 			;`,
 			account.Username,
 			account.Email,
@@ -216,6 +245,7 @@ func (s *PsqlAccountStore) Update(account *model.Account) error {
 			account.Loss,
 			account.Disputes,
 			account.SteamId,
+			pq.Array(account.FinderPostIds),
 			account.Id,
 		)
 		if err != nil {

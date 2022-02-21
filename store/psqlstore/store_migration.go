@@ -16,6 +16,7 @@ var migrations = []Migration{
 			loss int NOT NULL DEFAULT 0,
 			disputes int NOT NULL DEFAULT 0,
 			steam_id varchar(20),
+			finder_post_ids int[] NOT NULL DEFAULT '{}',
 			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id)
@@ -26,6 +27,7 @@ var migrations = []Migration{
 		`CREATE TABLE IF NOT EXISTS token (
 			id serial,
 			account_id int NOT NULL,
+			username varchar(30) NOT NULL DEFAULT '',
 			token char(100) NOT NULL,
 			create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			modify_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

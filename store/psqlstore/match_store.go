@@ -20,7 +20,6 @@ func (s *PsqlStore) Match() store.MatchStore {
 
 func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 	var match model.Match
-	var maps []uint8
 
 	rows, err := s.db.Query(`
 		SELECT
@@ -51,6 +50,7 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 	defer rows.Close()
 
 	for rows.Next() {
+		var maps []uint8
 		var team0Ids pq.Int64Array
 		var team1Ids pq.Int64Array
 		var result0 pq.Int64Array
@@ -79,6 +79,7 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 			log.Println(err)
 			return model.Match{}, err
 		}
+
 		match.Team0 = []int{}
 		for _, id := range team0Ids {
 			match.Team0 = append(
@@ -165,7 +166,6 @@ func (s *PsqlMatchStore) GetAll() ([]model.Match, error) {
 
 func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 	var matchs []model.Match
-	var maps []uint8
 
 	rows, err := s.db.Query(`
 		SELECT
@@ -198,6 +198,7 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 
 	for rows.Next() {
 		var match model.Match
+		var maps []uint8
 		var team0Ids pq.Int64Array
 		var team1Ids pq.Int64Array
 		var result0 pq.Int64Array

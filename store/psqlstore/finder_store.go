@@ -167,6 +167,23 @@ func (s *PsqlFinderStore) CreatePost(finderPost *model.FinderPost) error {
 
 	finderPost.Id = id
 
+	_, err = s.db.Exec(`
+		UPDATE
+			account
+		SET
+			finder_post_ids = ARRAY_APPEND(finder_post_ids, $1)
+		WHERE
+			id = $2
+	`,
+		finderPost.Id,
+		finderPost.Team[0],
+	)
+	if err != nil {
+		log.Println("e0045: Failed to add finder port id to account")
+		log.Println(err)
+		return err
+	}
+
 	return nil
 }
 
