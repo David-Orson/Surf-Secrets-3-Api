@@ -171,12 +171,19 @@ func reportMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 		if match.Result0[0] == match.Result1[0] && match.Result0[1] == match.Result1[1] {
 			if match.Result0[0] > match.Result0[1] {
 				match.Result = 0
+				s.Account().IncrementWin(match.Team0[0])
+				s.Account().IncrementLoss(match.Team1[0])
 			} else {
 				match.Result = 1
+				s.Account().IncrementWin(match.Team1[0])
+				s.Account().IncrementLoss(match.Team0[0])
 			}
 		} else {
 			match.IsDisputed = true
 			match.Result = 3
+			s.Account().IncrementDispute(match.Team0[0])
+			s.Account().IncrementDispute(match.Team1[0])
+
 		}
 	}
 

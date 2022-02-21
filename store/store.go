@@ -21,6 +21,9 @@ type AccountStore interface {
 	Create(account *model.Account) error
 	Update(account *model.Account) error
 	Delete(id int) error
+	IncrementWin(id int) error
+	IncrementLoss(id int) error
+	IncrementDispute(id int) error
 }
 
 type AuthStore interface {

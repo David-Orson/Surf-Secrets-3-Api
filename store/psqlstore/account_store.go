@@ -277,3 +277,60 @@ func (s *PsqlAccountStore) Delete(id int) error {
 	}
 	return nil
 }
+
+func (s *PsqlAccountStore) IncrementWin(id int) error {
+	_, err := s.db.Exec(`
+		UPDATE
+			account
+		SET
+			win = win + 1
+		WHERE
+			id = $1
+	`,
+		id,
+	)
+	if err != nil {
+		log.Println("e0046: Failed to increase wins on account")
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (s *PsqlAccountStore) IncrementLoss(id int) error {
+	_, err := s.db.Exec(`
+		UPDATE
+			account
+		SET
+			loss = loss + 1
+		WHERE
+			id = $1
+	`,
+		id,
+	)
+	if err != nil {
+		log.Println("e0046: Failed to increase losses on account")
+		log.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (s *PsqlAccountStore) IncrementDispute(id int) error {
+	_, err := s.db.Exec(`
+		UPDATE
+			account
+		SET
+			disputes = disputes + 1
+		WHERE
+			id = $1
+	`,
+		id,
+	)
+	if err != nil {
+		log.Println("e0046: Failed to increase disputes on account")
+		log.Println(err)
+		return err
+	}
+	return nil
+}
