@@ -100,6 +100,10 @@ func acceptMatch(w http.ResponseWriter, r *http.Request, authModel model.Auth) {
 		respondMsg(w, "Error: Could not get match finder post", http.StatusBadRequest)
 		return
 	}
+	if finderPost.IsAccepted {
+		respondMsg(w, "Error: Another user has accepted this post", http.StatusBadRequest)
+		return
+	}
 
 	resultArray[0] = 0
 	resultArray[1] = 0

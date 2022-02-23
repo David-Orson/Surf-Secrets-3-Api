@@ -27,7 +27,66 @@ func (s *PsqlFinderStore) GetPost(id int) (model.FinderPost, error) {
 			id,
 			team,
 			time,
-			maps
+			maps,
+			is_accepted
+		FROM
+			finder_post
+		WHERE
+			id = $1
+		LIMIT 1
+		;`,
+		id,
+	)
+
+	if err != nil {
+		log.Println("e0040: Failed to find finder post with id '" + strconv.Itoa(id) + "'")
+		log.Println(err)
+		return model.FinderPost{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var teamIds pq.Int64Array
+		err = rows.Scan(
+			&finderPost.Id,
+			&teamIds,
+			&finderPost.Time,
+			&maps,
+			&finderPost.IsAccepted,
+		)
+		if err != nil {
+			log.Println("e0041: Failed to populate FinderPost struct'")
+			log.Println(err)
+			return model.FinderPost{}, err
+		}
+		err = json.Unmarshal([]byte(maps), &finderPost.Maps)
+		if err != nil {
+			log.Println("Error: Failed to read MeasureRecord features")
+			log.Println(err)
+			return model.FinderPost{}, err
+		}
+		finderPost.Team = []int{}
+		for _, id := range teamIds {
+			finderPost.Team = append(
+				finderPost.Team,
+				int(id),
+			)
+		}
+	}
+
+	return finderPost, nil
+}
+
+func (s *PsqlFinderStore) GetAvailablePost(id int) (model.FinderPost, error) {
+	var finderPost model.FinderPost
+	var maps []uint8
+
+	rows, err := s.db.Query(`
+		SELECT	
+			id,
+			team,
+			time,
+			maps,
 		FROM
 			finder_post
 		WHERE
