@@ -26,6 +26,8 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 			id,
 			team_0,
 			team_1,
+			ARRAY(SELECT username FROM account WHERE team_0[1] = account.id) as username_0,
+			ARRAY(SELECT username FROM account WHERE team_1[1] = account.id ) as username_1,
 			team_size,
 			time,
 			maps,
@@ -53,12 +55,17 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 		var maps []uint8
 		var team0Ids pq.Int64Array
 		var team1Ids pq.Int64Array
+		var team0Names pq.StringArray
+		var team1Names pq.StringArray
 		var result0 pq.Int64Array
 		var result1 pq.Int64Array
+
 		err = rows.Scan(
 			&match.Id,
 			&team0Ids,
 			&team1Ids,
+			&team0Names,
+			&team1Names,
 			&match.TeamSize,
 			&match.Time,
 			&maps,
@@ -87,6 +94,7 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 				int(id),
 			)
 		}
+
 		match.Team1 = []int{}
 		for _, id := range team1Ids {
 			match.Team1 = append(
@@ -94,6 +102,17 @@ func (s *PsqlMatchStore) Get(id int) (model.Match, error) {
 				int(id),
 			)
 		}
+
+		match.Team0Names = []string{}
+		for _, name := range team0Names {
+			match.Team0Names = append(match.Team0Names, name)
+		}
+
+		match.Team1Names = []string{}
+		for _, name := range team1Names {
+			match.Team1Names = append(match.Team1Names, name)
+		}
+
 		match.Result0 = []int{}
 		for _, score := range result0 {
 			match.Result0 = append(
@@ -120,6 +139,8 @@ func (s *PsqlMatchStore) GetAll() ([]model.Match, error) {
 			id,
 			team_0,
 			team_1,
+			ARRAY(SELECT username FROM account WHERE team_0[1] = account.id) as username_0,
+			ARRAY(SELECT username FROM account WHERE team_1[1] = account.id ) as username_1,
 			team_size,
 			time,
 			maps,
@@ -172,6 +193,8 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 			id,
 			team_0,
 			team_1,
+			ARRAY(SELECT username FROM account WHERE team_0[1] = account.id) as username_0,
+			ARRAY(SELECT username FROM account WHERE team_1[1] = account.id ) as username_1,
 			team_size,
 			time,
 			maps,
@@ -201,12 +224,16 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 		var maps []uint8
 		var team0Ids pq.Int64Array
 		var team1Ids pq.Int64Array
+		var team0Names pq.StringArray
+		var team1Names pq.StringArray
 		var result0 pq.Int64Array
 		var result1 pq.Int64Array
 		err = rows.Scan(
 			&match.Id,
 			&team0Ids,
 			&team1Ids,
+			&team0Names,
+			&team1Names,
 			&match.TeamSize,
 			&match.Time,
 			&maps,
@@ -235,6 +262,7 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 				int(id),
 			)
 		}
+
 		match.Team1 = []int{}
 		for _, id := range team1Ids {
 			match.Team1 = append(
@@ -242,6 +270,17 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 				int(id),
 			)
 		}
+
+		match.Team0Names = []string{}
+		for _, name := range team0Names {
+			match.Team0Names = append(match.Team0Names, name)
+		}
+
+		match.Team1Names = []string{}
+		for _, name := range team1Names {
+			match.Team1Names = append(match.Team1Names, name)
+		}
+
 		match.Result0 = []int{}
 		for _, score := range result0 {
 			match.Result0 = append(
@@ -249,6 +288,7 @@ func (s *PsqlMatchStore) GetByAccount(accountId int) ([]model.Match, error) {
 				int(score),
 			)
 		}
+
 		match.Result1 = []int{}
 		for _, score := range result1 {
 			match.Result1 = append(

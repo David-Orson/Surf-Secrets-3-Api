@@ -90,7 +90,9 @@ func (s *PsqlFinderStore) GetAllPosts() ([]model.FinderPost, error) {
 		FROM
 			finder_post
 		WHERE
-			is_accepted = false	
+			is_accepted = false
+		AND
+			time > NOW()
 		;`,
 	)
 
