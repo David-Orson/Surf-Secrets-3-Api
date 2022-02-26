@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
+	"github.com/David-Orson/Surf-Secrets-3-Api/validation"
 )
 
 func accountRoutes() {
@@ -54,8 +55,17 @@ func createAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth)
 
 	readBytes(r, &account)
 
-	err = s.Account().Create(&account)
+	v, err := validation.ValidateAccount(&account)
+	if err != nil {
+		respondMsg(w, "Error: Could not create account", http.StatusBadRequest)
+		return
+	}
+	if !v.IsValid() {
+		respond(w, v, http.StatusBadRequest)
+		return
+	}
 
+	err = s.Account().Create(&account)
 	if err != nil {
 		respondMsg(w, "Error: Could not create account", http.StatusBadRequest)
 		return
@@ -70,8 +80,17 @@ func updateAccount(w http.ResponseWriter, r *http.Request, authModel model.Auth)
 
 	readBytes(r, &account)
 
-	err = s.Account().Update(&account)
+	v, err := validation.ValidateAccountUpdate(&account)
+	if err != nil {
+		respondMsg(w, "Error: Could not update account", http.StatusBadRequest)
+		return
+	}
+	if !v.IsValid() {
+		respond(w, v, http.StatusBadRequest)
+		return
+	}
 
+	err = s.Account().Update(&account)
 	if err != nil {
 		respondMsg(w, "Error: Could not update account", http.StatusBadRequest)
 		return

@@ -68,7 +68,7 @@ func (s *PsqlStore) Exec(query string) {
 	}
 }
 
-func (s *PsqlStore) CheckExists(table string, column string, field interface{}) bool {
+func (s *PsqlStore) IsDuplicate(table string, column string, field interface{}, count int) bool {
 	rows, err := s.db.Query(
 		"SELECT null FROM "+table+" WHERE "+column+"=$1",
 		field,
@@ -78,9 +78,10 @@ func (s *PsqlStore) CheckExists(table string, column string, field interface{}) 
 	}
 	defer rows.Close()
 
-	count := 0
+	i := 0
 	for rows.Next() {
-		count++
+		i++
+
 	}
-	return count > 0
+	return i > count
 }

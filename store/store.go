@@ -13,6 +13,8 @@ type Store interface {
 	Map() MapStore
 	Match() MatchStore
 	Token() TokenStore
+
+	HelperStore
 }
 
 type AccountStore interface {
@@ -36,6 +38,10 @@ type FinderStore interface {
 	GetAllPosts() ([]model.FinderPost, error)
 	CreatePost(finderPost *model.FinderPost) error
 	SetAccepted(id int) error
+}
+
+type HelperStore interface {
+	IsDuplicate(table string, column string, field interface{}, id int) bool
 }
 
 type MapStore interface {

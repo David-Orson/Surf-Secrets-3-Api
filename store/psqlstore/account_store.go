@@ -1,7 +1,6 @@
 package psqlstore
 
 import (
-	"errors"
 	"log"
 	"strconv"
 
@@ -138,13 +137,13 @@ func (s *PsqlAccountStore) GetAll() ([]model.Account, error) {
 }
 
 func (s *PsqlAccountStore) Create(account *model.Account) error {
-	if !s.CheckExists("account", "email", account.Email) {
-		hashedPass, _ := bcrypt.GenerateFromPassword(
-			[]byte(account.Password),
-			10,
-		)
-		var id int
-		err := s.db.QueryRow(`
+	hashedPass, _ := bcrypt.GenerateFromPassword(
+		[]byte(account.Password),
+		10,
+	)
+
+	var id int
+	err := s.db.QueryRow(`
 			INSERT INTO account (
 				username,
 				email,
@@ -164,26 +163,22 @@ func (s *PsqlAccountStore) Create(account *model.Account) error {
 			)
 			RETURNING id
 			;`,
-			account.Username,
-			account.Email,
-			hashedPass,
-			account.Win,
-			account.Loss,
-			account.Disputes,
-			account.SteamId,
-		).Scan(&id)
-		if err != nil {
-			log.Println("e0012: Failed to create 'account' row")
-			log.Println(err)
-			return err
-		}
-
-		account.Id = id
-	} else {
-		err := errors.New("'account' with email '" + account.Email + "' already exists")
+		account.Username,
+		account.Email,
+		hashedPass,
+		account.Win,
+		account.Loss,
+		account.Disputes,
+		account.SteamId,
+	).Scan(&id)
+	if err != nil {
+		log.Println("e0012: Failed to create 'account' row")
 		log.Println(err)
 		return err
 	}
+
+	account.Id = id
+
 	return nil
 }
 
@@ -258,23 +253,22 @@ func (s *PsqlAccountStore) Update(account *model.Account) error {
 }
 
 func (s *PsqlAccountStore) Delete(id int) error {
-	if s.CheckExists("account", "id", id) {
-		s.Token().DeleteAllByAccountId(id)
+	s.Token().DeleteAllByAccountId(id)
 
-		_, err := s.db.Exec(`
+	_, err := s.db.Exec(`
 				DELETE FROM
 					account
 				WHERE
 					id = $1
 				;`,
-			id,
-		)
-		if err != nil {
-			log.Println("e0015: Failed to delete 'account' with id '" + strconv.Itoa(id) + "'")
-			log.Println(err)
-			return err
-		}
+		id,
+	)
+	if err != nil {
+		log.Println("e0015: Failed to delete 'account' with id '" + strconv.Itoa(id) + "'")
+		log.Println(err)
+		return err
 	}
+
 	return nil
 }
 

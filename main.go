@@ -9,6 +9,7 @@ import (
 	"github.com/David-Orson/Surf-Secrets-3-Api/handler"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store"
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/psqlstore"
+	"github.com/David-Orson/Surf-Secrets-3-Api/validation"
 
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -28,6 +29,7 @@ func main() {
 
 	router := mux.NewRouter()
 	handler.InitRouter(router, s)
+	validation.Init(s)
 
 	originsOk := ghandlers.AllowedOrigins([]string{
 		os.Getenv("ORIGIN_ALLOWED"),

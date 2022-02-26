@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/David-Orson/Surf-Secrets-3-Api/store/model"
+	"github.com/David-Orson/Surf-Secrets-3-Api/validation"
 )
 
 func authRoutes() {
@@ -18,7 +18,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := s.Auth().Login(&account)
 	if err != nil {
-		log.Println("e0024: login error, ***validation needed")
+		v := validation.Validation{}
+		v.AddError("Invalid email or password")
+		respond(w, v, http.StatusBadRequest)
 		return
 	}
 
@@ -29,11 +31,27 @@ func signup(w http.ResponseWriter, r *http.Request) {
 	var account model.Account
 	readBytes(r, &account)
 
-	err := s.Account().Create(&account)
+	v, err := validation.ValidateAccount(&account)
+	if err != nil {
+		respondMsg(w, "Error: Could not create account", http.StatusBadRequest)
+		return
+	}
+	if !v.IsValid() {
+		respond(w, v, http.StatusBadRequest)
+		return
+	}
+
+	err = s.Account().Create(&account)
 	if err != nil {
 		respondMsg(w, "Error: Could not create account", http.StatusBadRequest)
 		return
 	}
 
-	respond(w, account, http.StatusCreated)
+	createdAccount, err := s.Account().Get(account.Username)
+	if err != nil {
+		respondMsg(w, "Error: Could not get newly created account", http.StatusBadRequest)
+		return
+	}
+
+	respond(w, createdAccount, http.StatusCreated)
 }
